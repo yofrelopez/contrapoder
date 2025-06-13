@@ -6,10 +6,15 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
-  const { slug } = params
+// el segundo parámetro debe llamarse "context" y tiparse como { params: { slug: string } }
+export async function GET(
+  req: NextRequest,
+  context: { params: { slug: string } }
+) {
+  const { slug } = context.params
   const views = await redis.incr(`noticia:visitas:${slug}`)
   return NextResponse.json({ views })
 }
 
-export const dynamic = 'force-dynamic' // necesario en Next.js 13+ para que no se cachee
+export const dynamic = 'force-dynamic'
+
