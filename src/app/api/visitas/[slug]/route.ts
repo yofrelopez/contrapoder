@@ -6,12 +6,12 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
 
-// el segundo parámetro debe llamarse "context" y tiparse como { params: { slug: string } }
-export async function GET(
-  req: NextRequest,
-  context: { params: { slug: string } }
-) {
-  const { slug } = context.params
+export async function GET(req: NextRequest) {
+  const slug = req.nextUrl.pathname.split('/').pop()
+  if (!slug) {
+    return NextResponse.json({ error: 'Slug no encontrado' }, { status: 400 })
+  }
+
   const views = await redis.incr(`noticia:visitas:${slug}`)
   return NextResponse.json({ views })
 }
