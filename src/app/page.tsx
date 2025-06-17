@@ -1,4 +1,6 @@
 // app/page.tsx
+export const revalidate = 60; // segundos (por ejemplo 1 minuto)
+
 import { getPublishedPosts } from '@/lib/notion'
 import Image from 'next/image'
 import Link from 'next/link'

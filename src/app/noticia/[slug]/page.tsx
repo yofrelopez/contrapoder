@@ -1,3 +1,4 @@
+export const revalidate = 60; // segundos (por ejemplo 1 minuto)
 
 import { getPublishedPosts } from '@/lib/notion'
 import { NotionAPI } from 'notion-client'
