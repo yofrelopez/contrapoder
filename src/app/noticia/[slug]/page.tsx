@@ -15,8 +15,8 @@ function normalizePageId(id: string): string {
 }
 
 // METADATOS PARA SEO Y REDES SOCIALES
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const { slug } = params
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
   const post = posts.find((p) => {
     const s = p.properties.Slug?.rich_text[0]?.plain_text || p.id
@@ -52,8 +52,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 // PÁGINA PRINCIPAL DE LA NOTICIA
 
-export default async function NoticiaPage({ params }: { params: { slug: string } }) {
-  const { slug } = params
+export default async function NoticiaPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`
 
   const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
