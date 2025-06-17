@@ -1,4 +1,4 @@
-export const revalidate = 60; // segundos (por ejemplo 1 minuto)
+
 
 import { getPublishedPosts } from '@/lib/notion'
 import { NotionAPI } from 'notion-client'
@@ -8,6 +8,10 @@ import Link from 'next/link'
 import { useEffect } from 'react'
 import { getAbsoluteUrl } from '@/lib/getAbsoluteUrl';
 import NoticiaContent from '@/components/NoticiaContent'
+
+
+export const revalidate = 60; // actualiza cada 60 segundos
+
 
 function normalizePageId(id: string): string {
   return id
