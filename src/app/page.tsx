@@ -35,11 +35,11 @@ export default async function HomePage() {
                     />
                   </div>
                 )}
-                <h2 className="text-xl font-semibold">{title}</h2>
+                <h2 className="text-3xl font-semibold">{title}</h2>
                 {subtitulo && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400">{subtitulo}</p>
+                  <p className="text-lg text-gray-600 dark:text-gray-400">{subtitulo}</p>
                 )}
-                <span className="text-xs text-gray-500">{fecha}</span>
+                <span className="text-sm text-gray-500">{fecha}</span>
               </Link>
             </li>
           )
