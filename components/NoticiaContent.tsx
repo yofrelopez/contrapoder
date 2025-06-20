@@ -1,5 +1,7 @@
 'use client'
 
+import { FaFacebookF, FaWhatsapp, FaXTwitter, FaLinkedinIn } from 'react-icons/fa6';
+
 import { useEffect } from 'react'
 import NotionRenderer from '@/components/NotionRenderer'
 import Link from 'next/link'
@@ -43,21 +45,27 @@ export default function NoticiaContent({
       <hr className="my-4" />
       <NotionRenderer recordMap={recordMap} />
 
-      <div className="mt-6 flex gap-4">
+      <div className="mt-6 flex items-center gap-4">
         <span className="text-sm font-medium text-gray-500">Compartir:</span>
-        <Link href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-          Facebook
+        
+        <Link href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 text-xl">
+          <FaFacebookF />
         </Link>
-        <Link href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-green-600 hover:underline">
-          WhatsApp
+
+        <Link href={`https://api.whatsapp.com/send?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-700 text-xl">
+          <FaWhatsapp />
         </Link>
-        <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-          X (Twitter)
+
+        <Link href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="text-black hover:text-gray-600 text-xl">
+          <FaXTwitter />
         </Link>
-        <Link href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(description)}`} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:underline">
-          LinkedIn
+
+        <Link href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(description)}`} target="_blank" rel="noopener noreferrer" className="text-sky-700 hover:text-sky-900 text-xl">
+          <FaLinkedinIn />
         </Link>
       </div>
+
+
     </main>
   )
 }

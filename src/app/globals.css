@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
 
 }
+
+.notion-custom-font {
+  font-family: 'Merriweather', serif;
+}
+
+.notion * {
+  font-family: 'Merriweather', serif !important;
+}

@@ -12,7 +12,7 @@ const NotionRendererBase = dynamic(() =>
 
 export default function NotionRenderer({ recordMap }: { recordMap: any }) {
   return (
-    <div className="notion">
+    <div className="notion notion-custom-font">
       <NotionRendererBase
         recordMap={recordMap}
         fullPage={false}
