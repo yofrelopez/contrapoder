@@ -1,18 +1,8 @@
-export const dynamic = 'force-dynamic';
-
-
-
 import { getPublishedPosts } from '@/lib/notion'
 import { NotionAPI } from 'notion-client'
-
 import { notFound } from 'next/navigation'
-
 import { getAbsoluteUrl } from '@/lib/getAbsoluteUrl';
 import NoticiaContent from '@/components/NoticiaContent'
-
-
-
-
 
 function normalizePageId(id: string): string {
   return id
@@ -21,22 +11,20 @@ function normalizePageId(id: string): string {
 }
 
 // METADATOS PARA SEO Y REDES SOCIALES
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!);
   const post = posts.find((p) => {
-    const s = p.properties.Slug?.rich_text[0]?.plain_text || p.id
-    return s === slug
-  })
+    const s = p.properties.Slug?.rich_text[0]?.plain_text || p.id;
+    return s === slug;
+  });
 
-  if (!post) return {}
+  if (!post) return {};
 
-  const title = post.properties.Name.title[0]?.plain_text || 'Contra Poder'
-  const description = post.properties.Resumen?.rich_text[0]?.plain_text || ''
-  const image = post.properties.Imagen?.url || '/default-og.png'
-  const url = `https://tusitio.com/noticia/${slug}`
-
-
+  const title = post.properties.Name.title[0]?.plain_text || 'Contra Poder';
+  const description = post.properties.Resumen?.rich_text[0]?.plain_text || '';
+  const image = post.properties.Imagen?.url || '/default-og.png';
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`;
 
   return {
     title,
@@ -53,38 +41,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       images: [image],
     },
-  }
+  };
 }
 
-// PÁGINA PRINCIPAL DE LA NOTICIA
+export default async function NoticiaPage({ params }: { params: { slug: string } }) {
+  const { slug } = params;
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`;
 
-export default async function NoticiaPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`
-
-  const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
+  const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!);
   const post = posts.find((p) => {
-    const s = p.properties.Slug?.rich_text[0]?.plain_text || p.id
-    return s === slug
-  })
+    const s = p.properties.Slug?.rich_text[0]?.plain_text || p.id;
+    return s === slug;
+  });
 
-  if (!post) return notFound()
+  if (!post) return notFound();
 
-  const notion = new NotionAPI()
-  const recordMap = await notion.getPage(normalizePageId(post.id))
+  const notion = new NotionAPI();
+  const recordMap = await notion.getPage(normalizePageId(post.id));
 
-  const title = post.properties.Name.title[0]?.plain_text || 'Sin título'
-  const subtitulo = post.properties.Subtítulo?.rich_text[0]?.plain_text || ''
-  const fecha = post.properties.Fecha.date?.start || ''
-  const description = post.properties.Resumen?.rich_text[0]?.plain_text || ''
+  const title = post.properties.Name.title[0]?.plain_text || 'Sin título';
+  const subtitulo = post.properties.Subtítulo?.rich_text[0]?.plain_text || '';
+  const fecha = post.properties.Fecha.date?.start || '';
+  const description = post.properties.Resumen?.rich_text[0]?.plain_text || '';
 
-  let visitas = 0
+  let visitas = 0;
   try {
-    const res = await fetch(getAbsoluteUrl(`/api/visitas/${slug}`))
-    const data = await res.json()
-    visitas = data.views || 0
+    const res = await fetch(getAbsoluteUrl(`/api/visitas/${slug}`));
+    const data = await res.json();
+    visitas = data.views || 0;
   } catch (err) {
-    console.error('Error al obtener visitas:', err)
+    console.error('Error al obtener visitas:', err);
   }
 
   return (
@@ -98,15 +84,5 @@ export default async function NoticiaPage({ params }: { params: Promise<{ slug: 
       description={description}
       recordMap={recordMap}
     />
-  )
-}
-
-
-// PARA GENERAR PÁGINAS ESTÁTICAS
-export async function generateStaticParams() {
-  const posts: any[] = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
-  return posts.map((post) => {
-    const slug = post.properties.Slug?.rich_text[0]?.plain_text || post.id
-    return { slug }
-  })
+  );
 }
