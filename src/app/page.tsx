@@ -1,12 +1,12 @@
 // app/page.tsx
 export const revalidate = 60; // segundos (por ejemplo 1 minuto)
 
-import { getPublishedPosts } from '@/lib/notion'
+import { getDatabaseItems } from '@/lib/notion'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default async function HomePage() {
-  const posts = await getPublishedPosts(process.env.NOTION_DATABASE_ID!)
+  const posts = await getDatabaseItems()
   console.log('posts:', posts)
 
   return (
