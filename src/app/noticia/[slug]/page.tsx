@@ -3,13 +3,22 @@ import { ExtendedRecordMap } from 'notion-types';
 import NoticiaContent from '@/components/NoticiaContent';
 import { Client } from '@notionhq/client';
 
+type PageProps<T> = {
+  params: T;
+};
+
+
 type PageParams = {
   params: { slug: string };  // ✅ SIN PROMISE
 };
 
 
-export default async function NoticiaPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params
+
+
+export default async function NoticiaPage({ params }: PageProps<{ slug: string }>) {
+
+const { slug } = params;
+
 
   const notion = new Client({
     auth: process.env.NOTION_TOKEN,
