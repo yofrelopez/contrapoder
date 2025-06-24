@@ -1,72 +1,53 @@
-import { getPostBySlug, getDatabaseItems, getRecordMap } from '@/lib/notion';
-import NoticiaContent from '@/components/NoticiaContent';
-import { notFound } from 'next/navigation';
+import { Metadata } from "next";
+import { getDatabaseItems, getPageContent } from "@/lib/notion";
+import NoticiaContent from "@/components/NoticiaContent";
 
+type Props = {
+  params: { slug: string };
+};
+
+// Genera los paths en build
 export async function generateStaticParams() {
   const posts = await getDatabaseItems();
-  return posts.map((post) => {
-    const slugProp = post.properties['Slug'];
-    const slug = slugProp?.type === 'rich_text' ? slugProp.rich_text[0]?.plain_text : post.id;
-    return { slug };
-  });
+  return posts.map((post) => ({
+    slug: post.properties.Slug?.rich_text?.[0]?.plain_text,
+  }));
 }
 
+// Genera los metadatos para SEO
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const posts = await getDatabaseItems();
+  const post = posts.find(
+    (p) => p.properties.Slug?.rich_text?.[0]?.plain_text === params.slug
+  );
 
-type Params = { slug: string };
-
-export async function generateMetadata({ params }: { params: Promise<Params> }) {
-  const { slug } = await params;
-
-  const post = await getPostBySlug(slug);
   if (!post) return {};
 
-  const title = post.properties['Name'].type === 'title'
-    ? post.properties['Name'].title[0]?.plain_text
-    : 'Sin título';
-
   return {
-    title: `${title} - Contra Poder`,
+    title: post.properties.Name?.title?.[0]?.plain_text,
+    description: post.properties.Resumen?.rich_text?.[0]?.plain_text || "",
   };
 }
 
+export default async function NoticiaPage({ params }: Props) {
+  const posts = await getDatabaseItems();
+  const post = posts.find(
+    (p) => p.properties.Slug?.rich_text?.[0]?.plain_text === params.slug
+  );
 
+  if (!post) return <div>Post no encontrado</div>;
 
-
-
-export default async function NoticiaPage({ params }: { params: Promise<Params> }) {
-  const { slug } = await params;
-
-  const post = await getPostBySlug(slug);
-  if (!post) return notFound();
-
-  const title = post.properties['Name'].type === 'title'
-    ? post.properties['Name'].title[0]?.plain_text
-    : 'Sin título';
-
-  const subtitulo = post.properties['Subtítulo']?.type === 'rich_text'
-    ? post.properties['Subtítulo'].rich_text[0]?.plain_text
-    : '';
-
-  const fecha = post.properties['Fecha']?.type === 'date'
-    ? post.properties['Fecha'].date?.start
-    : undefined; // lo dejamos opcional
-
-  const description = post.properties['Resumen']?.type === 'rich_text'
-    ? post.properties['Resumen'].rich_text[0]?.plain_text
-    : '';
-
-  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`;
-
-  const recordMap = await getRecordMap(post.id);
+  const recordMap = await getPageContent(post.id);
 
   return (
     <NoticiaContent
-      title={title}
-      subtitulo={subtitulo}
-      fecha={fecha}
-      description={description}
-      url={url}
+      title={post.properties.Name.title[0].plain_text}
+      subtitulo={post.properties.Subtítulo?.rich_text?.[0]?.plain_text || ""}
+      fecha={post.properties.Fecha?.date?.start || ""}
+      description={post.properties.Resumen?.rich_text?.[0]?.plain_text || ""}
       recordMap={recordMap}
+      url={`${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${params.slug}`}
     />
   );
 }
+
