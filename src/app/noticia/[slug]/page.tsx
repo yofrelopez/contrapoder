@@ -4,11 +4,12 @@ import NoticiaContent from '@/components/NoticiaContent';
 import { Client } from '@notionhq/client';
 
 type PageParams = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };  // ✅ SIN PROMISE
 };
 
-export default async function NoticiaPage({ params }: PageParams) {
-  const { slug } = await params;
+
+export default async function NoticiaPage({ params }: { params: { slug: string } }) {
+  const { slug } = await params
 
   const notion = new Client({
     auth: process.env.NOTION_TOKEN,
@@ -36,7 +37,7 @@ export default async function NoticiaPage({ params }: PageParams) {
 
   const title = page.properties?.Name?.title?.[0]?.plain_text || 'Sin título';
   const subtitulo = page.properties?.Subtítulo?.rich_text?.[0]?.plain_text || '';
-  const fecha = page.properties?.Fecha?.date?.start || '';
+  const fecha = page.properties?.Fecha?.date?.start ?? '';
   const description = page.properties?.Resumen?.rich_text?.[0]?.plain_text || '';
   const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`;
 
@@ -51,3 +52,5 @@ export default async function NoticiaPage({ params }: PageParams) {
     />
   );
 }
+
+
