@@ -3,6 +3,7 @@ import type { RecordMap, ExtendedRecordMap } from 'notion-types'
 import Link from 'next/link'
 import NotionRenderer from './NotionRenderer'
 import { FaFacebook, FaWhatsapp, FaXTwitter, FaLinkedin } from 'react-icons/fa6'
+import VisitasCounter from './VisitasCounter';
 
 type Props = {
   title: string
@@ -21,7 +22,7 @@ export default function NoticiaContent({
       <h1 className="text-3xl font-bold">{title}</h1>
 
       {subtitulo && <p className="text-lg text-gray-600 dark:text-gray-400 mb-2">{subtitulo}</p>}
-      {fecha && <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">{fecha}</div>}
+      {fecha && <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">{fecha} | <VisitasCounter slug={url.split('/').pop()!} /> </div>}
 
       <hr className="my-4" />
       <NotionRenderer recordMap={recordMap} />
