@@ -1,53 +1,53 @@
-import { Metadata } from "next";
-import { getDatabaseItems, getPageContent } from "@/lib/notion";
-import NoticiaContent from "@/components/NoticiaContent";
+import { NotionAPI } from 'notion-client';
+import { ExtendedRecordMap } from 'notion-types';
+import NoticiaContent from '@/components/NoticiaContent';
+import { Client } from '@notionhq/client';
 
-type Props = {
-  params: { slug: string };
+type PageParams = {
+  params: Promise<{ slug: string }>;
 };
 
-// Genera los paths en build
-export async function generateStaticParams() {
-  const posts = await getDatabaseItems();
-  return posts.map((post) => ({
-    slug: post.properties.Slug?.rich_text?.[0]?.plain_text,
-  }));
-}
+export default async function NoticiaPage({ params }: PageParams) {
+  const { slug } = await params;
 
-// Genera los metadatos para SEO
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const posts = await getDatabaseItems();
-  const post = posts.find(
-    (p) => p.properties.Slug?.rich_text?.[0]?.plain_text === params.slug
-  );
+  const notion = new Client({
+    auth: process.env.NOTION_TOKEN,
+  });
 
-  if (!post) return {};
+  const databaseId = process.env.NOTION_DATABASE_ID!;
+  const response = await notion.databases.query({
+    database_id: databaseId,
+    filter: {
+      property: 'Slug',
+      rich_text: {
+        equals: slug,
+      },
+    },
+  });
 
-  return {
-    title: post.properties.Name?.title?.[0]?.plain_text,
-    description: post.properties.Resumen?.rich_text?.[0]?.plain_text || "",
-  };
-}
+  if (!response.results.length) {
+    return <div>Noticia no encontrada</div>;
+  }
 
-export default async function NoticiaPage({ params }: Props) {
-  const posts = await getDatabaseItems();
-  const post = posts.find(
-    (p) => p.properties.Slug?.rich_text?.[0]?.plain_text === params.slug
-  );
+  const page = response.results[0] as any;
+  const pageId = page.id;
 
-  if (!post) return <div>Post no encontrado</div>;
+  const recordMap: ExtendedRecordMap = await new NotionAPI().getPage(pageId);
 
-  const recordMap = await getPageContent(post.id);
+  const title = page.properties?.Name?.title?.[0]?.plain_text || 'Sin título';
+  const subtitulo = page.properties?.Subtítulo?.rich_text?.[0]?.plain_text || '';
+  const fecha = page.properties?.Fecha?.date?.start || '';
+  const description = page.properties?.Resumen?.rich_text?.[0]?.plain_text || '';
+  const url = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`;
 
   return (
     <NoticiaContent
-      title={post.properties.Name.title[0].plain_text}
-      subtitulo={post.properties.Subtítulo?.rich_text?.[0]?.plain_text || ""}
-      fecha={post.properties.Fecha?.date?.start || ""}
-      description={post.properties.Resumen?.rich_text?.[0]?.plain_text || ""}
+      title={title}
+      subtitulo={subtitulo}
+      fecha={fecha}
+      description={description}
+      url={url}
       recordMap={recordMap}
-      url={`${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${params.slug}`}
     />
   );
 }
-
