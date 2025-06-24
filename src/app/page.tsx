@@ -1,41 +1,41 @@
 // src/app/page.tsx
+export const revalidate = 60   // ISR cada minuto
 
-import Link from 'next/link'
-import Image from 'next/image'
 import { getDatabaseItems } from '@/lib/notion'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export default async function HomePage() {
   const posts = await getDatabaseItems()
 
   return (
     <main className="max-w-4xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8">Noticias Recientes</h1>
-
-      {posts.map((post: any) => {
-        const properties = post.properties
-        const title = properties?.Name?.title?.[0]?.plain_text || 'Sin título'
-        const slug = properties?.Slug?.rich_text?.[0]?.plain_text || post.id
-        const subtitulo = properties?.Subtítulo?.rich_text?.[0]?.plain_text || ''
-        const imagenUrl = properties?.Imagen?.url || '' // aquí asumes que Imagen es un campo tipo URL
+      {posts.map(post => {
+        const p = post.properties as any
+        const title      = p.Name?.title?.[0]?.plain_text        ?? 'Sin título'
+        const subtitle   = p['Subtítulo']?.rich_text?.[0]?.plain_text ?? ''
+        const slug       = p.Slug?.rich_text?.[0]?.plain_text    ?? post.id
+        const fecha      = p.Fecha?.date?.start                  ?? ''
+        const imagenUrl  = p.Imagen?.url                         ?? ''
 
         return (
-          <Link key={post.id} href={`/noticia/${slug}`}>
-            <div className="mb-6 p-4 border rounded shadow hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer">
-              {imagenUrl && (
-                <div className="mb-4 relative aspect-video">
-                  <Image
-                    src={imagenUrl}
-                    alt={title}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-              )}
-              <h2 className="text-2xl font-bold">{title}</h2>
-              {subtitulo && (
-                <p className="text-gray-600 dark:text-gray-400">{subtitulo}</p>
-              )}
-            </div>
+          <Link key={post.id} href={`/noticia/${slug}`} className="block mb-8 group">
+            {imagenUrl && (
+              <div className="relative w-full aspect-video mb-2">
+                <Image
+                  src={imagenUrl}
+                  alt={title}
+                  fill
+                  className="object-cover rounded-md transition-opacity group-hover:opacity-90"
+                  sizes="(max-width: 768px) 100vw, 600px"
+                  priority
+                />
+              </div>
+            )}
+
+            <h2 className="text-2xl font-bold">{title}</h2>
+            {subtitle && <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>}
+            <span className="text-sm text-gray-500">{fecha}</span>
           </Link>
         )
       })}

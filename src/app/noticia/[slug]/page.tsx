@@ -1,50 +1,50 @@
 // src/app/noticia/[slug]/page.tsx
-import { notFound } from 'next/navigation'
-import { NotionAPI } from 'notion-client'
-import { Client } from '@notionhq/client'
-import { ExtendedRecordMap } from 'notion-types'
+export const revalidate = 60   // ISR de 1 min para cada post
 
+import { getDatabaseItems, getPageBySlug, getRecordMap } from '@/lib/notion'
 import NoticiaContent from '@/components/NoticiaContent'
+import { notFound } from 'next/navigation'
 
-type Props = {
-  params: { slug: string }   // ←  ❚  NO PROMISE, simple objeto
+export async function generateStaticParams() {
+  const posts = await getDatabaseItems()
+  return posts.map(post => {
+    const slug = (post.properties as any).Slug?.rich_text?.[0]?.plain_text ?? post.id
+    return { slug }
+  })
 }
 
-export default async function NoticiaPage({ params }: Props) {
-  const { slug } = params         // ←  ❚  ya NO se hace “await”
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const page = await getPageBySlug(params.slug)
+  if (!page) return {}
 
-  /* ────────── Notion ────────── */
-  const notion = new Client({ auth: process.env.NOTION_TOKEN })
-  const { results } = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
-    filter: {
-      property: 'Slug',
-      rich_text: { equals: slug },
-    },
-  })
-
-  if (!results.length) return notFound()
-
-  const page = results[0] as any
-  const recordMap: ExtendedRecordMap = await new NotionAPI().getPage(page.id)
-
-  /* ────────── Propiedades (cast “any” para no pelear con tipos del SDK) ────────── */
   const p = page.properties as any
-  const title       = p.Name?.title?.[0]?.plain_text        ?? 'Sin título'
-  const subtitulo   = p.Subtítulo?.rich_text?.[0]?.plain_text ?? ''
-  const fecha       = p.Fecha?.date?.start                  ?? ''
+  const title = p.Name?.title?.[0]?.plain_text ?? 'Contra Poder'
   const description = p.Resumen?.rich_text?.[0]?.plain_text ?? ''
-  const url         = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${slug}`
+  const image = p.Imagen?.url ?? '/default-og.png'
+  const url   = `${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${params.slug}`
 
-  /* ────────── Render ────────── */
+  return {
+    title, description,
+    openGraph: { title, description, url, images:[{ url:image }] },
+    twitter:   { card:'summary_large_image', title, description, images:[image] }
+  }
+}
+
+export default async function NoticiaPage({ params }: { params: { slug: string } }) {
+  const page = await getPageBySlug(params.slug)
+  if (!page) return notFound()
+
+  const p = page.properties as any
+  const recordMap = await getRecordMap(page.id)
+
   return (
     <NoticiaContent
-      title={title}
-      subtitulo={subtitulo}
-      fecha={fecha}
-      description={description}
-      url={url}
-      recordMap={recordMap}
+      title       = {p.Name?.title?.[0]?.plain_text        ?? 'Sin título'}
+      subtitulo   = {p['Subtítulo']?.rich_text?.[0]?.plain_text ?? ''}
+      fecha       = {p.Fecha?.date?.start                  ?? ''}
+      description = {p.Resumen?.rich_text?.[0]?.plain_text ?? ''}
+      url         = {`${process.env.NEXT_PUBLIC_SITE_URL}/noticia/${params.slug}`}
+      recordMap   = {recordMap}
     />
   )
 }
